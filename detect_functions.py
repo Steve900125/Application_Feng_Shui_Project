@@ -29,6 +29,7 @@ class FengShuiItem:
     def __repr__(self):
         return f"Item ({self.x1}, {self.y1}, {self.x2}, {self.y2}, '{self.orientation}')"
 
+# Call by main directly
 # Object : 針對圖片進行物件偵測
 # Input : 將圖片所屬的資料夾路徑放置於此函數
 # Output: 產生平面圖辨識結果到 ./runs/detect/predict(N) 位置 
@@ -69,6 +70,7 @@ def find_latest_folder(base_path, base_name="predict"):
     else:
         return None
 
+# Call by main directly
 # Object : 利用分類器去分類指定圖片源內的物件
 # Input : 物件的名稱 , 原始資料的名稱(被crops裁切前的原始檔案) , 分類器的 model 路徑
 # Output : 辨識完類別的 list 如果找不到會回傳 None
@@ -200,7 +202,10 @@ def check_door(item_A , item_B , orientation) -> dict:
             return result_dic
             # End
     
-
+# Call by main directly
+# Input : Item xyxy data list , Item classification result list
+# Output : symmetry_results : Class FengShuiItem 2 items  dic: {'symmetry' : 是否對稱 ,  'bounding_area' : 重疊比例 (0~1) , 'full_contain' : 是否被完全包含}
+# Logic : 分成垂直跟水平的 list -> 針對不同方向作排序(越接近越容易面對面) -> C n 取 2 比較所有物件
 def identify_door_symmetry(door_xyxy_list , door_cls_list):
     vertical_list = []
     horizontal_list = []
@@ -262,6 +267,8 @@ def floor_plan_edit(image_dir):
     return result
 
 # 找出兩點間的像素路徑
+# Input: 2 point (x , y)
+# Output : 路徑 point list
 def bresenham_line(x0, y0, x1, y1):
     x0, y0, x1, y1 = round(x0), round(y0), round(x1), round(y1)
     points = []
@@ -283,8 +290,10 @@ def bresenham_line(x0, y0, x1, y1):
             y0 += sy
     return points
 
+# Call by main directly
 # Input: 原始平面圖路徑 , 物件2個 , 比較方向
 # Output : 再路徑中被阻擋的最大範圍數值 0 ~ 1 (黑色像素)
+# Logic : 把圖片作牆體偵測處理 -> 算出兩物件連線路徑 -> 確認方向 -> 以線條計算黑點數量 -> 回傳計算值最大遮罩比例
 def check_obstacle_rate(image_dir, item_A, item_B , orientation):
 
     floor_plan = floor_plan_edit(image_dir)
