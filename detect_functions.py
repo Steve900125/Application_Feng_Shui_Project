@@ -156,6 +156,8 @@ def check_door(item_A , item_B , orientation) -> dict:
             # full contain check
             if  left_door.x1 <= right_door.x1  and right_door.x2 <= left_door.x2:
                 result_dic['full_contain'] = True
+            elif left_door.x1 >= right_door.x1 and left_door.x2 <= right_door.x2:
+                result_dic['full_contain'] = True
             else :
                 result_dic['full_contain'] = False
             
@@ -194,6 +196,8 @@ def check_door(item_A , item_B , orientation) -> dict:
             # full contain check
             if up_door.y1 <= down_door.y1 and down_door.y2 <=  up_door.y2:
                 result_dic['full_contain'] = True
+            elif up_door.y1 >= down_door.y1 and down_door.y2 >=  up_door.y2:
+                result_dic['full_contain'] = True 
             else :
                 result_dic['full_contain'] = False
             
