@@ -32,7 +32,7 @@ for result in results:
 
     # 回傳所有針對物件對稱辨識的結果包含:
     # 1. 比較的兩個物件資料 (Class  FengShuiItem : define by detect_functions.py)
-    # 2. 比較結果 : 'symmetry' : 是否對稱 ,  'bounding_area' : 重疊比例 (0~1) , 'full_contain' : 是否被完全包含
+    # 2. 比較結果 : 'symmetry' : 是否對稱 ,  'cross_area_rate' : 重疊比例 (0~1) , 'full_contain' : 是否被完全包含
     symmetry_results = d_f.identify_door_symmetry( target_list , cls_list )
     
     # 檢查中間有沒有障礙物比例

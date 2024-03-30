@@ -122,7 +122,7 @@ def orientation_classify(item_name , org_img_name , cls_model_dir):
 
 # Object : 辨識面對面的百分比用聯集取交集
 # Input : class FengShuiItem A and B + orientation
-# Output : symmetry (bool :True/False) , bounding_area (float) , full_contain (bool :True/False)
+# Output : symmetry (bool :True/False) , cross_area_rate (float) , full_contain (bool :True/False)
 def check_door(item_A , item_B , orientation) -> dict:
     result_dic = {}
     if orientation == 'vertical':
@@ -140,7 +140,7 @@ def check_door(item_A , item_B , orientation) -> dict:
         # 當左方門的最大值仍然小於右方門的最小值代表沒有交集
         if left_door.x2 <= right_door.x1:
             result_dic['symmetry'] = False
-            result_dic['bounding_area'] = 0
+            result_dic['cross_area_rate'] = 0
             result_dic['full_contain'] = False
             return result_dic
             # End
@@ -151,7 +151,7 @@ def check_door(item_A , item_B , orientation) -> dict:
             # 最大減最小確定聯集範圍
             union = data[3] - data[0]
             intersection = data[2] - data[1]
-            bounding_area = intersection / union
+            cross_area_rate = intersection / union
 
             # full contain check
             if  left_door.x1 <= right_door.x1  and right_door.x2 <= left_door.x2:
@@ -160,7 +160,7 @@ def check_door(item_A , item_B , orientation) -> dict:
                 result_dic['full_contain'] = False
             
             result_dic['symmetry'] = True
-            result_dic['bounding_area'] = bounding_area
+            result_dic['cross_area_rate'] = cross_area_rate
             
             return result_dic
     
@@ -178,7 +178,7 @@ def check_door(item_A , item_B , orientation) -> dict:
         
         if up_door.y2 <= down_door.y1:
             result_dic['symmetry'] = False
-            result_dic['bounding_area'] = 0
+            result_dic['cross_area_rate'] = 0
             result_dic['full_contain'] = False
             return result_dic
             # End
@@ -189,7 +189,7 @@ def check_door(item_A , item_B , orientation) -> dict:
             # 最大減最小確定聯集範圍
             union = data[3] - data[0]
             intersection = data[2] - data[1]
-            bounding_area =  intersection / union
+            cross_area_rate =  intersection / union
 
             # full contain check
             if up_door.y1 <= down_door.y1 and down_door.y2 <=  up_door.y2:
@@ -198,13 +198,13 @@ def check_door(item_A , item_B , orientation) -> dict:
                 result_dic['full_contain'] = False
             
             result_dic['symmetry'] = True
-            result_dic['bounding_area'] = bounding_area
+            result_dic['cross_area_rate'] = cross_area_rate
             return result_dic
             # End
     
 # Call by main directly
 # Input : Item xyxy data list , Item classification result list
-# Output : symmetry_results : Class FengShuiItem 2 items  dic: {'symmetry' : 是否對稱 ,  'bounding_area' : 重疊比例 (0~1) , 'full_contain' : 是否被完全包含}
+# Output : symmetry_results : Class FengShuiItem 2 items  dic: {'symmetry' : 是否對稱 ,  'cross_area_rate' : 重疊比例 (0~1) , 'full_contain' : 是否被完全包含}
 # Logic : 分成垂直跟水平的 list -> 針對不同方向作排序(越接近越容易面對面) -> C n 取 2 比較所有物件
 def identify_door_symmetry(door_xyxy_list , door_cls_list):
     vertical_list = []
