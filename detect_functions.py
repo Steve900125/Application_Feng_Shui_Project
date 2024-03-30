@@ -314,9 +314,15 @@ def check_obstacle_rate(image_dir, item_A, item_B , orientation):
             # If is 'vertical' we check horizontal side area so the Y axis would not change
             # __ ^
             # __ |
-            left = abs(point[0] - half_range)
-            right = abs(point[0] + half_range)
+            left = point[0] - half_range
+            right = point[0] + half_range
             black_point_counter = 0
+
+            # Avoid out of range
+            if left < 0:
+                left = 0
+            if right > floor_plan.shape[1] :
+                right = floor_plan.shape[1]
 
             for n in range(left , right + 1):
                 # If we found black point on the horizontal side area
@@ -334,9 +340,15 @@ def check_obstacle_rate(image_dir, item_A, item_B , orientation):
             # If is 'horizontal' we check vertical side area so the X axis would not change
             # |||||| 
             # ----->
-            up =  abs(point[1] - half_range)
+            up =  point[1] - half_range
             down = abs(point[1] +  half_range) # In image down is bigger
             black_point_counter = 0
+
+            # Avoid out of range
+            if up < 0:
+                up = 0
+            if down > floor_plan.shape[0] :
+                down = floor_plan.shape[0]
 
             for n in range(up , down + 1):
                  # If we found black point on the vertical side area
