@@ -40,7 +40,7 @@ for result in results:
     
     # 針對已經發現對稱的物件檢查中間的障礙物
     for sym_item in symmetry_true:
-        obstacle_rate = d_f.check_obstacle_rate( result.path , sym_item[0] , sym_item[0] , sym_item[0].orientation)
+        obstacle_rate = d_f.check_obstacle_rate( result.path , sym_item[0] , sym_item[1] , sym_item[0].orientation)
         sym_item[2]["obstacle_rate"] = obstacle_rate # In the dic we add obstacle_rate values
         print(sym_item[2])
 
