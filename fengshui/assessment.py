@@ -1,6 +1,7 @@
-from ultralytics.engine.results import Results
-from typing import List, Optional
+from ultralytics.engine.results import Results # type: ignore
+from typing import List, Optional, Dict
 from pathlib import Path
+import cv2
 import shutil
 import sys  
 import os 
@@ -23,21 +24,26 @@ YOLO_RESULTS_PATH = ROOT / 'runs'
 DETECT_MODEL_PATH = ROOT / 'models' / 'detect_yolov8.pt'
 CLASSIFY_MODEL_PATH = ROOT / 'models' / 'classify_yolov8.pt'
 
-# Fengshui class
-from fengshui.item import Item
+# Fengshui 
+from fengshui.item import Item  # Core class vary important
+OUTPUT_PATH = ROOT / 'fengshui' / 'output' # Note: In "draw" dir have same default path
 
 # Draw
 from draw.draw_item import draw_bounding_boxes
 from draw.draw_item import save_to_image
 
-def show_results(results:list):
+# Overlape
+from overlape.overlape import overlape_rate
+OVERLAPE_THRESHOLD = 0.5 # 50% overlape range
+
+def show_results(results: List[Results]):
     print(len(results[0].boxes.cls))
     print(results[0].boxes.cls)
     #print(results[0].boxes)
     print(results[0])
     print(type(results[0].boxes)) 
 
-def clean_folder(folder_path:Path):
+def clean_folder(folder_path: Path):
     '''
         'clean_folder' is using in server to clean temporary files
     '''
@@ -46,7 +52,7 @@ def clean_folder(folder_path:Path):
         print(f"{folder_path} has been deleted.")
         os.makedirs(folder_path)
 
-def extract_target_xyxy_data(object_name:str, result:Results)->Optional[List[List[float]]]:
+def extract_target_xyxy_data(object_name: str, result: Results) -> Optional[List[List[float]]]:
     """
     Extracts the bounding box coordinates for the specified object name from the given Results object.
 
@@ -75,7 +81,7 @@ def extract_target_xyxy_data(object_name:str, result:Results)->Optional[List[Lis
 
     return target_data_list
 
-def init_one_target(object_name:str, result:Results)->Optional[List[Item]]:
+def init_one_target(object_name: str, result: Results) -> Optional[List[Item]]:
     """
     Initializes a list of Item objects for the specified object name from the given Results object.
 
@@ -106,32 +112,88 @@ def init_one_target(object_name:str, result:Results)->Optional[List[Item]]:
     else:
         return None # The data don't correspond in length
 
-def object_to_object(objects_name:List[str], result:Results):
+def save_overlap_to_jpg(overlape_results:Dict[str, dict], result: Results):
+
+    # Selet target
+    image = cv2.imread(str(result.path))
+    for res in overlape_results:
+        image = draw_bounding_boxes(item=res['items'][0],image=image)
+        image = draw_bounding_boxes(item=res['items'][1],image=image)
+        print(res)
+    
+    # Init file name (save at ROOT / fengshui / *.jpg)
+    result_path = Path(result.path)
+    file_name = 'overlape_' + str(result_path.name)
+    save_to_image(image=image, file_name=file_name)
+
+def filter_overlape_rate(overlape_results: List[Dict[str, dict]]) -> List[Dict[str, dict]]:
+    """
+    Checks the overlap rate and full coverage status for a list of results, 
+    and returns a list of eligible results.
+
+    Parameters:
+    - overlape_results (List[Dict[str, dict]]): A list of dictionaries containing overlap analysis results.
+
+    Returns:
+    - List[Dict[str, dict]]: A list of eligible results where full coverage is achieved 
+                             or the overlap rate is above the defined threshold.
+    """
+    eligibility_list = []
+    for res in overlape_results:
+        if res['full_coverage'] or res['rate'] >= OVERLAPE_THRESHOLD:
+            eligibility_list.append(res)
+    return eligibility_list
+
+# Core function
+def object_to_object(objects_name: List[str], result: Results):
     ''' 
-        FengShui oject to object analysis 
-        (IMPORTANT!! If "result" doesn't have any data we return None)
-        Step1 : Check 2 target is same name or not
-        Step2 : Formate the data which we can easily use ("Future formatable input data location.")
-        Step3 : Check they are overlap or not
-        Step4 : Check if the path is clear if these two objects overlap
+    FengShui object to object analysis.
+    
+    Parameters:
+    - objects_name (List[str]): List of object names to analyze.
+    - result (Results): The results object containing detected objects and their bounding boxes.
+    
+    Returns:
+    - Optional[dict]: Analysis result dictionary or None if no data is available.
+    
+    Steps:
+    <Check if result is empty (no data)>
+    1. Check if the number of target objects is valid (1 or 2).
+    2. Format the data for easier use.
+    3. Caculate the overlap rate
+    4. Filter the objects by the threshold and save target to jpg.
+    5. Check if the path is clear if the objects overlap.
     '''
+
+    overlape_results = []
+
     # Is result empty (no data)
     if len(result.boxes.cls)<=0:
         return None
 
-    # Step1 
+    # Step1 : Check the number of target objects
     if len(objects_name) == 1:
-        # Stept2
+        # Stept2 : Format the data for one target
         item_list = init_one_target(object_name=objects_name[0], result=result)
-        print(item_list[0])
-        image = draw_bounding_boxes(image_path=result.path,item=item_list[0])
-        save_to_image(image=image, file_name='test.jpg')
 
+        # Step 3: Compare each pair of items for overlap
+        for out_index in range(len(item_list)):
+            for inner_index in range(out_index+1, len(item_list)):
+                items = [item_list[out_index], item_list[inner_index]]
+                # {"items": List[Item, Item],"rate": float,"full_coverage": bool}
+                overlape_results.append(overlape_rate(items=items))
 
     elif len(objects_name) == 2:
         pass
     else:
         return None
+    
+    # Step4 : Filter the objects by the threshold and save target to jpg.
+
+    # Filter by OVERLAPE_THRESHOLD
+    have_overlape_list = filter_overlape_rate(overlape_results)
+    # Note: For extract oringinal path need to input "result"
+    save_overlap_to_jpg(have_overlape_list, result=result)  
 
 
 def run():
@@ -148,6 +210,7 @@ def run():
     """
     # Delete previous user data
     clean_folder(YOLO_RESULTS_PATH)
+    clean_folder(OUTPUT_PATH)
     
     # Object detection
     results = floor_plan_detect(images_path=IMAGES_PATH, model_path=DETECT_MODEL_PATH)
@@ -159,9 +222,6 @@ def run():
     for result in results:
         object_to_object(objects_name=door_to_door, result=result)
         #object_to_object(objects_name=entrance_to_kitchen, result=result)
-    
-
-    
     
 
 if __name__ == "__main__":

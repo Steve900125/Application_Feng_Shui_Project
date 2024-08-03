@@ -1,12 +1,12 @@
-from ultralytics.engine.results import Results
+from ultralytics.engine.results import Results # type: ignore
 from typing import List, Optional
-from ultralytics import YOLO
+from ultralytics import YOLO # type: ignore
 from pathlib import Path
 
 def get_class_name(result:Results):
     return result.names[result.probs.top1]
 
-def object_orientation_classify(root:Path, model_path:Path, object_name:str, result:Results)->Optional[List]:
+def object_orientation_classify(root: Path, model_path: Path, object_name: str, result: Results) -> Optional[List]:
 
     # To find item image crops path from YOLOv8
     item_crops_path = root / Path(result.save_dir) / 'crops' / object_name

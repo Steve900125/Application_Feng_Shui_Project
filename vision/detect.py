@@ -1,10 +1,10 @@
-from ultralytics.engine.results import Results
-from ultralytics import YOLO
+from ultralytics.engine.results import Results # type: ignore
+from ultralytics import YOLO # type: ignore
 from pathlib import Path
 from typing import List, Optional
 
 
-def floor_plan_detect(images_path:Path, model_path:Path) -> Optional[List[Results]]:
+def floor_plan_detect(images_path: Path, model_path: Path) -> Optional[List[Results]]:
     """
         This function uses YOLOv8 to detect objects in the floor plan.
 
