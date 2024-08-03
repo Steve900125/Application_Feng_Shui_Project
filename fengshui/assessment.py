@@ -168,11 +168,14 @@ def object_to_object(objects_name: List[str], result: Results):
     overlape_results = []
 
     # Is result empty (no data)
-    if len(result.boxes.cls)<=0:
-        return None
+    target_cls_list = result.boxes.cls.tolist()
+    for name in objects_name:
+        if target_cls_list.count(name) <= 0:
+            return None
 
     # Step1 : Check the number of target objects
     if len(objects_name) == 1:
+
         # Stept2 : Format the data for one target
         item_list = init_one_target(object_name=objects_name[0], result=result)
 
@@ -218,11 +221,12 @@ def run():
     
     # Object to object analysis
     door_to_door = ['door']
+    window_to_window = ['window']
     entrance_to_kitchen = ['entrance', 'kitchen']
     for result in results:
-        object_to_object(objects_name=door_to_door, result=result)
+        #object_to_object(objects_name=door_to_door, result=result)
+        object_to_object(objects_name=window_to_window, result=result)
         #object_to_object(objects_name=entrance_to_kitchen, result=result)
-    
 
 if __name__ == "__main__":
     run()
