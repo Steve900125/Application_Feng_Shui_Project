@@ -10,6 +10,9 @@ sys.path.insert(0, str(ROOT))  # for import modules
 # Fengshui class
 from fengshui.item import Item
 
+from draw.draw_item import draw_bounding_boxes
+from draw.draw_item import save_to_image
+
 def order_points(items: List[Item]) -> Dict[str, dict]:
     """
     Order points by projection value, and return a dictionary with 4 ordered values.
@@ -84,6 +87,7 @@ def cal_inter_rate(order_dic: Dict[str, dict]) -> float:
     if order_dic['first_point']['item'] != order_dic['second_point']['item']:
         union_range = order_dic['fourth_point']['value'] - order_dic['first_point']['value']
         inter_range = order_dic['third_point']['value'] - order_dic['second_point']['value']
+        
         if inter_range >= 0 and union_range >0:
             return inter_range / union_range
         else:
@@ -115,10 +119,26 @@ def overlape_rate(items: List[Item]) -> Dict[str, dict]:
     return result_dic
 
 if __name__ == '__main__':
-    item1 = Item(x1=1, y1=2, x2=5, y2=6, name='Item A', orientation='horizontal')
-    item2 = Item(x1=3, y1=4, x2=4, y2=8, name='Item B', orientation='horizontal')
+    # Define the items
+    items = [
+        Item(702.2831420898438, 584.4522705078125, 785.9961547851562, 680.3616943359375, 'door', 'horizontal'),
+        Item(106.75611877441406, 106.28368377685547, 223.01071166992188, 212.30514526367188, 'door', 'horizontal'),
+        Item(785.08642578125, 497.03765869140625, 879.02880859375, 583.862548828125, 'door', 'vertical'),
+        Item(704.1438598632812, 406.7515869140625, 786.35986328125, 498.7106018066406, 'door', 'vertical'),
+        Item(784.2705688476562, 854.5673217773438, 869.21044921875, 933.338623046875, 'door', 'horizontal'),
+        Item(459.5932312011719, 219.94772338867188, 544.4046630859375, 314.1328430175781, 'door', 'vertical'),
+        Item(614.6255493164062, 415.4562683105469, 689.44873046875, 496.7417297363281, 'door', 'horizontal'),
+        Item(550.9129638671875, 139.6213836669922, 641.0330200195312, 223.3002471923828, 'door', 'horizontal'),
+        Item(624.34619140625, 322.4889831542969, 691.6366577148438, 393.45184326171875, 'door', 'vertical')
+    ]
 
-    items = [item1, item2]
+
+
+    items = [items[0],items[3]]
+    image_path = ROOT / 'images' / 'FloorPlan (2).jpg'
+    image = draw_bounding_boxes(image_path=image_path, item=items[0])
+    image = draw_bounding_boxes(image=image, item=items[1])
+    save_to_image(image=image,file_name='test.jpg')
 
     result = overlape_rate(items)
     print(result)

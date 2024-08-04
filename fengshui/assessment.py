@@ -98,7 +98,10 @@ def init_one_target(object_name: str, result: Results) -> Optional[List[Item]]:
     orientation_list = object_orientation_classify(root=ROOT, model_path=CLASSIFY_MODEL_PATH, object_name=object_name, result=result)
     xyxy_list =  extract_target_xyxy_data(object_name=object_name, result=result)
     item_list = []
-
+    
+    print('orientation_list',len(orientation_list))
+    print('xyxy_list',len(xyxy_list))
+    print(orientation_list)
     if len(orientation_list) == len(xyxy_list):  # (error detect)
         for index in range(len(orientation_list)):
             item = Item(x1=xyxy_list[index][0],
@@ -117,14 +120,15 @@ def save_overlap_to_jpg(overlape_results:Dict[str, dict], result: Results):
     # Selet target
     image = cv2.imread(str(result.path))
     for res in overlape_results:
-        image = draw_bounding_boxes(item=res['items'][0],image=image)
-        image = draw_bounding_boxes(item=res['items'][1],image=image)
-        print(res)
+        image = draw_bounding_boxes(item=res['items'][0], image=image)
+        image = draw_bounding_boxes(item=res['items'][1], image=image)
     
     # Init file name (save at ROOT / fengshui / *.jpg)
     result_path = Path(result.path)
-    file_name = 'overlape_' + str(result_path.name)
-    save_to_image(image=image, file_name=file_name)
+    sub_name = res['items'][0].name + res['items'][1].name
+    file_name = 'overlape_' + sub_name + str(result_path.name)
+
+    save_to_image(image= image, file_name= file_name)
 
 def filter_overlape_rate(overlape_results: List[Dict[str, dict]]) -> List[Dict[str, dict]]:
     """
@@ -142,6 +146,7 @@ def filter_overlape_rate(overlape_results: List[Dict[str, dict]]) -> List[Dict[s
     for res in overlape_results:
         if res['full_coverage'] or res['rate'] >= OVERLAPE_THRESHOLD:
             eligibility_list.append(res)
+
     return eligibility_list
 
 # Core function
@@ -169,15 +174,28 @@ def object_to_object(objects_name: List[str], result: Results):
 
     # Is result empty (no data)
     target_cls_list = result.boxes.cls.tolist()
+    objects_name_id = []
+
+    # Find it's id from result.names
     for name in objects_name:
-        if target_cls_list.count(name) <= 0:
+        for cls_id in result.names:
+                if result.names[cls_id] == name:
+                    objects_name_id.append(cls_id)
+
+    # Check exist in target_cls_list
+    for name_id in objects_name_id :
+        if target_cls_list.count(name_id) <= 0:
             return None
 
     # Step1 : Check the number of target objects
     if len(objects_name) == 1:
-
+        
         # Stept2 : Format the data for one target
         item_list = init_one_target(object_name=objects_name[0], result=result)
+
+        if item_list is None:
+            print("The item_list is None")
+            return None
 
         # Step 3: Compare each pair of items for overlap
         for out_index in range(len(item_list)):
@@ -187,17 +205,29 @@ def object_to_object(objects_name: List[str], result: Results):
                 overlape_results.append(overlape_rate(items=items))
 
     elif len(objects_name) == 2:
-        pass
+
+        # Stept2 : Format the data for one target
+        type_one_item_list = init_one_target(object_name=objects_name[0], result=result)
+        type_two_item_list = init_one_target(object_name=objects_name[1], result=result)
+
+        for type_one_item in type_one_item_list:
+            for type_two_item in type_two_item_list:
+                items = [type_one_item, type_two_item]
+                # {"items": List[Item, Item],"rate": float,"full_coverage": bool}
+                overlape_results.append(overlape_rate(items=items))
+
     else:
         return None
     
     # Step4 : Filter the objects by the threshold and save target to jpg.
+    print(item_list)
 
     # Filter by OVERLAPE_THRESHOLD
     have_overlape_list = filter_overlape_rate(overlape_results)
-    # Note: For extract oringinal path need to input "result"
-    save_overlap_to_jpg(have_overlape_list, result=result)  
-
+    
+    # Note: For extract oringinal path need to input "result"  
+    if len(have_overlape_list) > 0:
+        save_overlap_to_jpg(have_overlape_list, result=result)  
 
 def run():
     """
@@ -217,15 +247,14 @@ def run():
     
     # Object detection
     results = floor_plan_detect(images_path=IMAGES_PATH, model_path=DETECT_MODEL_PATH)
-    show_results(results=results)
     
     # Object to object analysis
     door_to_door = ['door']
     window_to_window = ['window']
     entrance_to_kitchen = ['entrance', 'kitchen']
     for result in results:
-        #object_to_object(objects_name=door_to_door, result=result)
-        object_to_object(objects_name=window_to_window, result=result)
+        object_to_object(objects_name=door_to_door, result=result)
+        #object_to_object(objects_name=window_to_window, result=result)
         #object_to_object(objects_name=entrance_to_kitchen, result=result)
 
 if __name__ == "__main__":
