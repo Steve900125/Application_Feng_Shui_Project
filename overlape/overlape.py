@@ -131,10 +131,15 @@ if __name__ == '__main__':
         Item(550.9129638671875, 139.6213836669922, 641.0330200195312, 223.3002471923828, 'door', 'horizontal'),
         Item(624.34619140625, 322.4889831542969, 691.6366577148438, 393.45184326171875, 'door', 'vertical')
     ]
-
-
+    test = [
+        Item(4.2847514152526855, 103.40266418457031, 83.41145324707031, 206.95797729492188,'entrance', 'horizontal'),
+        Item(335.0831604003906, 69.35748291015625, 541.446044921875, 300.3077392578125,'kitchen', 'horizontal')
+    ]
 
     items = [items[0],items[3]]
+    items =  test
+
+
     image_path = ROOT / 'images' / 'FloorPlan (2).jpg'
     image = draw_bounding_boxes(image_path=image_path, item=items[0])
     image = draw_bounding_boxes(image=image, item=items[1])
