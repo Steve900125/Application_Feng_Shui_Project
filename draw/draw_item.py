@@ -1,4 +1,4 @@
-from typing import Optional, Tuple
+from typing import Optional, Tuple, List
 from pathlib import Path
 import numpy as np
 import sys
@@ -50,7 +50,26 @@ def draw_bounding_boxes(image_path: Optional[Path] = None,
 
     return image
 
-def save_to_image(image:np.ndarray, file_name:str='bounding.jpg'):
+def draw_points_line(image: np.ndarray, points_line: List[Tuple[int, int]], color: Tuple[int, int, int] = (0, 255, 0)) -> np.ndarray:
+    """
+    Draws a line on the image using the given points.
+
+    Parameters:
+    - image (np.ndarray): The image array.
+    - points_line (List[Tuple[int, int]]): List of points representing the line.
+    - color (Tuple[int, int, int]): Color of the points in BGR format. Default is red (0, 0, 255).
+
+    Returns:
+    - np.ndarray: The image with the line drawn on it.
+    """
+    image_with_line = cv2.cvtColor(image, cv2.COLOR_GRAY2BGR) if len(image.shape) == 2 else image
+    for point in points_line:
+        cv2.circle(image_with_line, point, 1, color, -1)
+    
+    return image_with_line
+
+
+def save_to_image(image: np.ndarray, file_name: str= 'bounding.jpg'):
     """
     Saves the given image to the specified file path.
 
