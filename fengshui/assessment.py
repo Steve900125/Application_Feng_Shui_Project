@@ -32,9 +32,9 @@ OUTPUT_PATH = ROOT / 'fengshui' / 'output' # Note: In "draw" dir have same defau
 from draw.draw_item import draw_bounding_boxes
 from draw.draw_item import save_to_image
 
-# Overlape
-from overlape.overlape import overlape_rate
-OVERLAPE_THRESHOLD = 0.5 # 50% overlape range
+# Overlap
+from overlap.overlap import overlap_rate
+OVERLAP_THRESHOLD = 0.5 # 50% overlap range
 
 def show_results(results: List[Results]):
     print(len(results[0].boxes.cls))
@@ -116,59 +116,59 @@ def init_one_target(object_name: str, result: Results) -> Optional[List[Item]]:
     else:
         return None # The data don't correspond in length
 
-def save_overlap_to_jpg(overlape_results:Dict[str, dict], result: Results):
+def save_overlap_to_jpg(overlap_results:Dict[str, dict], result: Results):
 
     # Selet target
     image = cv2.imread(str(result.path))
-    for res in overlape_results:
+    for res in overlap_results:
         image = draw_bounding_boxes(item=res['items'][0], image=image)
         image = draw_bounding_boxes(item=res['items'][1], image=image)
     
     # Init file name (save at ROOT / fengshui / *.jpg)
     result_path = Path(result.path)
     sub_name = res['items'][0].name + res['items'][1].name
-    file_name = 'overlape_' + sub_name + str(result_path.name)
+    file_name = 'overlap_' + sub_name + str(result_path.name)
 
     save_to_image(image= image, file_name= file_name)
 
-def filter_overlape_rate(overlape_results: List[Dict[str, dict]]) -> List[Dict[str, dict]]:
+def filter_overlap_rate(overlap_results: List[Dict[str, dict]]) -> List[Dict[str, dict]]:
     """
     Checks the overlap rate and full coverage status for a list of results, 
     and returns a list of eligible results.
 
     Parameters:
-    - overlape_results (List[Dict[str, dict]]): A list of dictionaries containing overlap analysis results.
+    - overlap_results (List[Dict[str, dict]]): A list of dictionaries containing overlap analysis results.
 
     Returns:
     - List[Dict[str, dict]]: A list of eligible results where full coverage is achieved 
                              or the overlap rate is above the defined threshold.
     """
     eligibility_list = []
-    for res in overlape_results:
-        if res['full_coverage'] or res['rate'] >= OVERLAPE_THRESHOLD:
+    for res in overlap_results:
+        if res['full_coverage'] or res['rate'] >= OVERLAP_THRESHOLD:
             eligibility_list.append(res)
 
     return eligibility_list
 
 def get_overlap_results_one_item(item_list: List[Item]) -> List[Dict[str, any]]:
-    overlape_results = []
+    overlap_results = []
     # Step 3: Compare each pair of items for overlap
     for out_index in range(len(item_list)):
         for inner_index in range(out_index+1, len(item_list)):
             items = [item_list[out_index], item_list[inner_index]]
             # {"items": List[Item, Item],"rate": float,"full_coverage": bool}
-            overlape_results.append(overlape_rate(items=items))
-    return overlape_results
+            overlap_results.append(overlap_rate(items=items))
+    return overlap_results
 
 def get_overlap_results_two_item(type_one_item_list: List[Item], type_two_item_list: List[Item])-> List[Dict[str, any]]:
-    overlape_results = []
+    overlap_results = []
     # Step 3: Compare each pair of items for overlap
     for type_one_item in type_one_item_list:
         for type_two_item in type_two_item_list:
             items = [type_one_item, type_two_item]
             # {"items": List[Item, Item],"rate": float,"full_coverage": bool}
-            overlape_results.append(overlape_rate(items=items))
-    return overlape_results
+            overlap_results.append(overlap_rate(items=items))
+    return overlap_results
 
 def change_orientation(item_list: List[Item], orientation: str)-> List[Item]:
     for item in item_list:
@@ -196,7 +196,7 @@ def object_to_object(objects_name: List[str], result: Results, orient_check: Dic
     5. Check if the path is clear if the objects overlap.
     '''
 
-    overlape_results = []
+    overlap_results = []
 
     # Is result empty (no data)
     target_cls_list = result.boxes.cls.tolist()
@@ -226,16 +226,16 @@ def object_to_object(objects_name: List[str], result: Results, orient_check: Dic
         #if orient_check[objects_name] == False:
         # Step 3: Compare each pair of items for overlap
         if orient_check[objects_name[0]]:
-            overlape_results = get_overlap_results_one_item(item_list=item_list)
+            overlap_results = get_overlap_results_one_item(item_list=item_list)
         else:
             # No orientation check means that process need to check both orientation.
             item_list = change_orientation(item_list= item_list, orientation= 'horizontal')
-            hor_overlape_results = get_overlap_results_one_item(item_list=item_list)
+            hor_overlap_results = get_overlap_results_one_item(item_list=item_list)
 
             item_list = change_orientation(item_list= item_list, orientation= 'vertical')
-            ver_overlape_results = get_overlap_results_one_item(item_list=item_list)
+            ver_overlap_results = get_overlap_results_one_item(item_list=item_list)
 
-            overlape_results = hor_overlape_results + ver_overlape_results
+            overlap_results = hor_overlap_results + ver_overlap_results
             
 
 
@@ -244,28 +244,28 @@ def object_to_object(objects_name: List[str], result: Results, orient_check: Dic
         type_one_item_list = init_one_target(object_name=objects_name[0], result=result)
         type_two_item_list = init_one_target(object_name=objects_name[1], result=result)
 
-        print(type_one_item_list)
-        print(type_two_item_list)
+        #print(type_one_item_list)
+        #print(type_two_item_list)
 
         # Both need to check orientation
         if orient_check[objects_name[0]] and orient_check[objects_name[1]]:
             print("Both need to check orientation")
-            overlape_results = get_overlap_results_two_item(type_one_item_list=type_one_item_list, 
+            overlap_results = get_overlap_results_two_item(type_one_item_list=type_one_item_list, 
                                                             type_two_item_list=type_two_item_list)
         # Both don't need to check orientation
         elif not orient_check[objects_name[0]] and not orient_check[objects_name[1]]:
             print("don't need to check orientation")
             type_one_item_list = change_orientation(item_list= type_one_item_list, orientation= 'horizontal')
             type_two_item_list = change_orientation(item_list= type_two_item_list, orientation= 'horizontal')
-            hor_overlape_results = get_overlap_results_two_item(type_one_item_list=type_one_item_list, 
+            hor_overlap_results = get_overlap_results_two_item(type_one_item_list=type_one_item_list, 
                                                             type_two_item_list=type_two_item_list)
             
             type_one_item_list = change_orientation(item_list= type_one_item_list, orientation= 'vertical')
             type_two_item_list = change_orientation(item_list= type_two_item_list, orientation= 'vertical')
-            ver_overlape_results = get_overlap_results_two_item(type_one_item_list=type_one_item_list, 
+            ver_overlap_results = get_overlap_results_two_item(type_one_item_list=type_one_item_list, 
                                                                 type_two_item_list=type_two_item_list)  
 
-            overlape_results = hor_overlape_results + ver_overlape_results
+            overlap_results = hor_overlap_results + ver_overlap_results
 
         # One of them need check orientation
         else:
@@ -279,27 +279,28 @@ def object_to_object(objects_name: List[str], result: Results, orient_check: Dic
 
             
             dependence＿list = change_orientation(item_list= dependence＿list, orientation= 'horizontal')
-            hor_overlape_results = get_overlap_results_two_item(type_one_item_list= main_list, 
+            hor_overlap_results = get_overlap_results_two_item(type_one_item_list= main_list, 
                                                                 type_two_item_list= dependence＿list)
             
             dependence＿list = change_orientation(item_list= dependence＿list, orientation= 'vertical')
-            ver_overlape_results = get_overlap_results_two_item(type_one_item_list= main_list, 
+            ver_overlap_results = get_overlap_results_two_item(type_one_item_list= main_list, 
                                                                 type_two_item_list= dependence＿list)
-            overlape_results = hor_overlape_results + ver_overlape_results 
+            overlap_results = hor_overlap_results + ver_overlap_results 
 
-            #save_overlap_to_jpg(overlape_results, result=result) 
-            print("overlape_results ",overlape_results)
+            #save_overlap_to_jpg(overlap_results, result=result) 
+            print("overlap_results ",overlap_results)
     else:
         return None
     
     # Step4 : Filter the objects by the threshold and save target to jpg.
+    # Filter by OVERLAP_THRESHOLD
+    have_overlap_list = filter_overlap_rate(overlap_results)
 
-    # Filter by OVERLAPE_THRESHOLD
-    have_overlape_list = filter_overlape_rate(overlape_results)
+
     
     # Note: For extract oringinal path need to input "result"  
-    if len(have_overlape_list) > 0:
-        save_overlap_to_jpg(have_overlape_list, result=result)  
+    if len(have_overlap_list) > 0:
+        save_overlap_to_jpg(have_overlap_list, result=result)  
 
 def run():
     """
@@ -324,10 +325,10 @@ def run():
     door_to_door = ['door']
     window_to_window = ['window']
     entrance_to_kitchen = ['entrance', 'kitchen']
-    orient_check = {'entrance': True, 'kitchen': False, 'door': True}
+    orient_check = {'entrance': False, 'kitchen': False, 'door': True, 'window':True}
     for result in results:
         object_to_object(objects_name=door_to_door, result=result, orient_check=orient_check)
-        #object_to_object(objects_name=window_to_window, result=result)
+        object_to_object(objects_name=window_to_window, result=result, orient_check=orient_check)
         object_to_object(objects_name=entrance_to_kitchen, result=result, orient_check=orient_check)
 
 if __name__ == "__main__":

@@ -95,7 +95,7 @@ def cal_inter_rate(order_dic: Dict[str, dict]) -> float:
     else:  # No intersection I___I  |___|
         return 0.0
 
-def overlape_rate(items: List[Item]) -> Dict[str, dict]:
+def overlap_rate(items: List[Item]) -> Dict[str, dict]:
     """
     Calculate the overlap rate and check full coverage for a list of items.
     
@@ -145,7 +145,7 @@ if __name__ == '__main__':
     image = draw_bounding_boxes(image=image, item=items[1])
     save_to_image(image=image,file_name='test.jpg')
 
-    result = overlape_rate(items)
+    result = overlap_rate(items)
     print(result)
 
     order_result = order_points(items)
