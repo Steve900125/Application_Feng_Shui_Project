@@ -209,7 +209,7 @@ def change_orientation(item_list: List[Item], orientation: str)-> List[Item]:
     return new_item_list
 
 # Core function
-def object_to_object(objects_name: List[str], result: Results, orient_check: Dict[str, bool]):
+def total_object_to_object(objects_name: List[str], result: Results, orient_check: Dict[str, bool]):
     ''' 
     FengShui object to object analysis.
     
@@ -346,7 +346,6 @@ def object_to_object(objects_name: List[str], result: Results, orient_check: Dic
     if len(pass_obstacle_results) > 0:
         save_obstacle_to_jpg(obstacle_results= pass_obstacle_results, result=result)
         
-    
 def run():
     """
         Main function for Feng Shui conflict detection.
@@ -372,9 +371,9 @@ def run():
     entrance_to_kitchen = ['entrance', 'kitchen']
     orient_check = {'entrance': False, 'kitchen': False, 'door': True, 'window':True}
     for result in results:
-        object_to_object(objects_name=door_to_door, result=result, orient_check=orient_check)
-        object_to_object(objects_name=window_to_window, result=result, orient_check=orient_check)
-        object_to_object(objects_name=entrance_to_kitchen, result=result, orient_check=orient_check)
+        total_object_to_object(objects_name=door_to_door, result=result, orient_check=orient_check)
+        total_object_to_object(objects_name=window_to_window, result=result, orient_check=orient_check)
+        total_object_to_object(objects_name=entrance_to_kitchen, result=result, orient_check=orient_check)
 
 if __name__ == "__main__":
     run()
