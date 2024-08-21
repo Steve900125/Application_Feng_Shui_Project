@@ -8,10 +8,12 @@ ROOT = FILE.parents[1]
 sys.path.insert(0, str(ROOT))   # for import moduls 
 
 CLASSIFY_MODEL_PATH = ROOT / 'models' / 'classify_yolov8.pt'
+
+
 def get_class_name(result):
     return result.names[result.probs.top1]
 
-matching_files_sorted = ROOT /  'runs' / 'detect' /'predict' / 'crops' /'entrance' / 'entrance.jpg'
+matching_files_sorted = ROOT / 'test' / 'images' / 'entrance'
 model = YOLO(CLASSIFY_MODEL_PATH)  # pretrained YOLOv8 cls model
 results = model.predict(matching_files_sorted)
 

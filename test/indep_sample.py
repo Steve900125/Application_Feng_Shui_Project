@@ -10,7 +10,7 @@ sys.path.insert(0, str(ROOT))   # for import moduls
 from fengshui.item import Item  # Core class vary important
 from fengshui.indep_assess import object_to_object
 
-TEST_IMAGE = ROOT / 'test' / 'FloorPlan (2).jpg'
+TEST_IMAGE = ROOT / 'test' / 'images' /'FloorPlan (2).jpg'
 
 if __name__ == "__main__":
     test = [
