@@ -47,8 +47,8 @@ def object_orientation_classify(root: Path, model_path: Path, object_name: str, 
     matching_files_sorted = sorted(matching_files, key=lambda x: extract_suffix(x.name))
 
     # Resize image
-    resize_images_files = [Path(file) for file in matching_files_sorted]
-    resize_images(image_paths=resize_images_files)
+    #resize_images_files = [Path(file) for file in matching_files_sorted]
+    #resize_images(image_paths=resize_images_files)
     
     if item_crops_path.exists and not_empty:
         model = YOLO(model_path)  # pretrained YOLOv8 cls model

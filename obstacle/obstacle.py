@@ -1,6 +1,7 @@
 from pathlib import Path
 from typing import List, Tuple, Dict
 import numpy as np
+from PIL import Image
 import cv2
 import sys
 
@@ -10,6 +11,40 @@ ROOT = FILE.parents[1]
 sys.path.insert(0, str(ROOT))  # for import modules
 
 from fengshui.item import Item  # Core class, very important
+
+def apply_white_boxes(floor_plan: np.ndarray, items: List[Item]) -> np.ndarray:
+    """
+    Apply white boxes on the floor plan image for each item's bounding box with a 2% margin.
+
+    Parameters:
+    - floor_plan (np.ndarray): The binarized floor plan image where obstacles are to be highlighted.
+    - items (List[Item]): List of items whose bounding boxes are to be expanded and applied as white boxes on the floor plan.
+
+    Returns:
+    - np.ndarray: The updated floor plan image with white boxes applied over the specified items.
+    """
+    height, width = floor_plan.shape[:2]
+
+    for item in items:
+        # Get the bounding box coordinates from the Item object
+        x_min, y_min = int(item.x1), int(item.y1)
+        x_max, y_max = int(item.x2), int(item.y2)
+
+        # Calculate a 2% margin to expand the bounding box
+        x_margin = int((x_max - x_min) * 0.02)
+        y_margin = int((y_max - y_min) * 0.02)
+
+        # Adjust the coordinates to include the margin, ensuring they stay within image boundaries
+        x_min = max(0, x_min - x_margin)
+        y_min = max(0, y_min - y_margin)
+        x_max = min(width, x_max + x_margin)
+        y_max = min(height, y_max + y_margin)
+
+        # Set the pixels in the expanded bounding box area to white
+        floor_plan[y_min:y_max, x_min:x_max] = 255
+
+    return floor_plan
+
 
 def floor_plan_binarization(image_path: Path) -> np.ndarray:
     """
@@ -21,14 +56,32 @@ def floor_plan_binarization(image_path: Path) -> np.ndarray:
     Returns:
     - np.ndarray: Binarized image.
     """
-    image = cv2.imread(str(image_path))
-    image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    try:
+        pil_image = Image.open(image_path)
+        image = np.array(pil_image)
+    except Exception as e:
+        raise ValueError(f"Failed to load image from {image_path}: {e}")
+
+    if image is None:
+        raise ValueError(f"Failed to load image from {image_path}")
+
+    # Check if the image is already grayscale or not
+    if len(image.shape) == 3:  # If image has 3 channels, it's a color image
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+
+    # Apply bilateral filter
     blur = cv2.bilateralFilter(image, 10, 100, 1000)
+
+    # Apply morphological operations
     kernel = np.ones((3, 3), np.uint8)
     img_erode = cv2.erode(blur, kernel)
     img_dilate = cv2.dilate(img_erode, kernel)
+
+    # Apply threshold to binarize the image
     ret, result = cv2.threshold(img_dilate, 50, 255, cv2.THRESH_BINARY)
+
     return result
+
 
 def bresenham_line(x0: int, y0: int, x1: int, y1: int) -> List[Tuple[int, int]]:
     """
@@ -119,6 +172,10 @@ def items_obstacle_detect(image_path: Path, items: List[Item]) -> Dict[str, any]
     if items[0].orientation != items[1].orientation:
         raise ValueError("Items do not have the same orientation")
 
+    # Clean Items area to white
+    floor_plan = apply_white_boxes(floor_plan=floor_plan, items=items)
+
+    # Check obstacle
     scan_range = max(items[0].get_length_value(), items[1].get_length_value())
     max_black_point = points_check(floor_plan, points_line, scan_range, items[0].orientation)
 

@@ -42,12 +42,16 @@ OBSTACLE_THRESHOLD = 0.5 # 50%
 from overlap.overlap import overlap_rate
 OVERLAP_THRESHOLD = 0.5 # 50% overlap range
 
-def show_results(results: List[Results]):
-    print(len(results[0].boxes.cls))
-    print(results[0].boxes.cls)
-    #print(results[0].boxes)
-    print(results[0])
-    print(type(results[0].boxes)) 
+def show_analy_results(result: Dict[str, List]):
+
+    # items, rate, full_coverage
+    for res in result['overlap_result']:
+       print(res)
+
+    # items, points_line, bin_image_np_arrary, rate
+    for res in result['obstacle_result']:
+       print(res)
+       
 
 def clean_folder(folder_path: Path):
     '''
@@ -236,7 +240,7 @@ def total_object_to_object(objects_name: List[str], result: Results, orient_chec
     target_cls_list = result.boxes.cls.tolist()
     objects_name_id = []
 
-    # Find it's id from result.names
+    # Find item id from result.names
     for name in objects_name:
         for cls_id in result.names:
                 if result.names[cls_id] == name:
@@ -320,8 +324,6 @@ def total_object_to_object(objects_name: List[str], result: Results, orient_chec
             ver_overlap_results = get_overlap_results_two_item(type_one_item_list= main_list, 
                                                                 type_two_item_list= dependence＿list)
             overlap_results = hor_overlap_results + ver_overlap_results 
-
-            #save_overlap_to_jpg(overlap_results, result=result) 
     else:
         return None
     
@@ -334,7 +336,6 @@ def total_object_to_object(objects_name: List[str], result: Results, orient_chec
     if len(have_overlap_list) > 0:
         save_overlap_to_jpg(have_overlap_list, result=result)  
     
-
     obstacle_results = []
     # Step5 : check obstical rate
     # target
@@ -345,6 +346,13 @@ def total_object_to_object(objects_name: List[str], result: Results, orient_chec
     pass_obstacle_results = filter_obstacle_rate(obstacle_results=obstacle_results)
     if len(pass_obstacle_results) > 0:
         save_obstacle_to_jpg(obstacle_results= pass_obstacle_results, result=result)
+
+    all_result = {
+        'overlap_result'  : have_overlap_list,
+        'obstacle_result' : pass_obstacle_results
+    }
+
+    return all_result 
         
 def run():
     """
@@ -371,9 +379,11 @@ def run():
     entrance_to_kitchen = ['entrance', 'kitchen']
     orient_check = {'entrance': False, 'kitchen': False, 'door': True, 'window':True}
     for result in results:
-        total_object_to_object(objects_name=door_to_door, result=result, orient_check=orient_check)
-        total_object_to_object(objects_name=window_to_window, result=result, orient_check=orient_check)
-        total_object_to_object(objects_name=entrance_to_kitchen, result=result, orient_check=orient_check)
+        door_results = total_object_to_object(objects_name=door_to_door, result=result, orient_check=orient_check)
+        #window_results = total_object_to_object(objects_name=window_to_window, result=result, orient_check=orient_check)
+        entr_results = total_object_to_object(objects_name=entrance_to_kitchen, result=result, orient_check=orient_check)
+
+    show_analy_results(door_results)
 
 if __name__ == "__main__":
     run()
