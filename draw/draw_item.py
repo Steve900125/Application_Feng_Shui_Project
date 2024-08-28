@@ -11,6 +11,7 @@ sys.path.insert(0, str(ROOT))   # for import moduls
 
 from fengshui.item import Item
 
+
 def draw_bounding_boxes(image_path: Optional[Path] = None, 
                         image: Optional[np.ndarray] = None, 
                         color: Tuple[int, int, int] = (0, 0, 255), 
@@ -47,6 +48,25 @@ def draw_bounding_boxes(image_path: Optional[Path] = None,
 
     # Draw the rectangle on the image
     cv2.rectangle(image, start_point, end_point, color, thickness)
+
+    # Add background rectangle for the text
+    font = cv2.FONT_HERSHEY_SIMPLEX
+    font_scale = 0.5
+    font_thickness = 1
+    text_color = (255, 255, 255)
+    text = item.name
+
+    # Calculate text size
+    (text_width, text_height), baseline = cv2.getTextSize(text, font, font_scale, font_thickness)
+    background_start_point = (start_point[0], start_point[1] - text_height - 5)
+    background_end_point = (start_point[0] + text_width, start_point[1])
+
+    # Draw background rectangle
+    cv2.rectangle(image, background_start_point, background_end_point, color, thickness=cv2.FILLED)
+
+    # Add text on top of the rectangle
+    text_position = (start_point[0], start_point[1] - 5)
+    cv2.putText(image, text, text_position, font, font_scale, text_color, font_thickness, lineType=cv2.LINE_AA)
 
     return image
 

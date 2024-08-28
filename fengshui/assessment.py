@@ -42,15 +42,17 @@ OBSTACLE_THRESHOLD = 0.5 # 50%
 from overlap.overlap import overlap_rate
 OVERLAP_THRESHOLD = 0.5 # 50% overlap range
 
+# 這裡應該要是 list 對應 oto result 主程式要再修正
 def show_analy_results(result: Dict[str, List]):
 
-    # items, rate, full_coverage
     for res in result['overlap_result']:
-       print(res)
+        # Print the names of the two overlapping items
+        print("Item 1 name: {}, Item 2 name: {}".format(res['items'][0].name, res['items'][1].name))
 
     # items, points_line, bin_image_np_arrary, rate
     for res in result['obstacle_result']:
-       print(res)
+        print("Item 1 name: {}, Item 2 name: {}".format(res['items'][0].name, res['items'][1].name))
+
        
 
 def clean_folder(folder_path: Path):
@@ -156,6 +158,8 @@ def save_obstacle_to_jpg(obstacle_results: Dict[str, any], result: Results):
     file_name = 'obstacle_' + sub_name + str(result_path.name)
 
     save_to_image(image= image, file_name= file_name)
+
+    return file_name
 
 def filter_overlap_rate(overlap_results: List[Dict[str, any]]) -> List[Dict[str, any]]:
     """
@@ -344,15 +348,18 @@ def total_object_to_object(objects_name: List[str], result: Results, orient_chec
         obstacle_results.append(obstacle_result)
     
     pass_obstacle_results = filter_obstacle_rate(obstacle_results=obstacle_results)
+
+    image_result_dir = None
     if len(pass_obstacle_results) > 0:
         save_obstacle_to_jpg(obstacle_results= pass_obstacle_results, result=result)
 
-    all_result = {
+    all_results = {
         'overlap_result'  : have_overlap_list,
-        'obstacle_result' : pass_obstacle_results
+        'obstacle_result' : pass_obstacle_results,
+        'image_path' : image_result_dir
     }
 
-    return all_result 
+    return all_results
         
 def run():
     """
@@ -375,12 +382,14 @@ def run():
     
     # Object to object analysis
     door_to_door = ['door']
-    window_to_window = ['window']
+    # window_to_window = ['window']
     entrance_to_kitchen = ['entrance', 'kitchen']
+
     orient_check = {'entrance': False, 'kitchen': False, 'door': True, 'window':True}
+
     for result in results:
         door_results = total_object_to_object(objects_name=door_to_door, result=result, orient_check=orient_check)
-        #window_results = total_object_to_object(objects_name=window_to_window, result=result, orient_check=orient_check)
+        # window_results = total_object_to_object(objects_name=window_to_window, result=result, orient_check=orient_check)
         entr_results = total_object_to_object(objects_name=entrance_to_kitchen, result=result, orient_check=orient_check)
 
     show_analy_results(door_results)

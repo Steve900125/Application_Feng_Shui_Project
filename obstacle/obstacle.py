@@ -172,7 +172,7 @@ def items_obstacle_detect(image_path: Path, items: List[Item]) -> Dict[str, any]
     if items[0].orientation != items[1].orientation:
         raise ValueError("Items do not have the same orientation")
 
-    # Clean Items area to white
+    # Clean Items area to white"
     floor_plan = apply_white_boxes(floor_plan=floor_plan, items=items)
 
     # Check obstacle

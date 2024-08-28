@@ -12,6 +12,7 @@ ROOT = FILE.parents[1]
 sys.path.insert(0, str(ROOT))  # for import modules
 
 from obstacle.obstacle import floor_plan_binarization
+from obstacle.obstacle import apply_white_boxes
 
 IMAGES_PATH = ROOT / 'test' / 'val_images'
 SAVE_BIN_DIR = ROOT / 'test' / 'bin_images'
@@ -28,6 +29,7 @@ class TestBina(unittest.TestCase):
     def test_binarization(self):
         for image_path in IMAGES_PATH.glob('*.*'):  # Adjust the pattern if necessary
             with self.subTest(image=image_path):
+                
                 # Run the binarization process
                 bin_image = floor_plan_binarization(image_path=image_path)
 
