@@ -78,7 +78,7 @@ def floor_plan_binarization(image_path: Path) -> np.ndarray:
     img_dilate = cv2.dilate(img_erode, kernel)
 
     # Apply threshold to binarize the image
-    ret, result = cv2.threshold(img_dilate, 50, 255, cv2.THRESH_BINARY)
+    ret, result = cv2.threshold(img_dilate, 70, 255, cv2.THRESH_BINARY)
 
     return result
 

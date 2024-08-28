@@ -45,6 +45,9 @@ OVERLAP_THRESHOLD = 0.5 # 50% overlap range
 # 這裡應該要是 list 對應 oto result 主程式要再修正
 def show_analy_results(result: Dict[str, List]):
 
+    if result is None:
+        return None
+
     for res in result['overlap_result']:
         # Print the names of the two overlapping items
         print("Item 1 name: {}, Item 2 name: {}".format(res['items'][0].name, res['items'][1].name))
@@ -286,6 +289,8 @@ def total_object_to_object(objects_name: List[str], result: Results, orient_chec
 
         #print(type_one_item_list)
         #print(type_two_item_list)
+        if type_one_item_list is None or type_two_item_list is None:
+            return None
 
         # Both need to check orientation
         if orient_check[objects_name[0]] and orient_check[objects_name[1]]:
@@ -352,6 +357,8 @@ def total_object_to_object(objects_name: List[str], result: Results, orient_chec
     image_result_dir = None
     if len(pass_obstacle_results) > 0:
         save_obstacle_to_jpg(obstacle_results= pass_obstacle_results, result=result)
+    else:
+        return None
 
     all_results = {
         'overlap_result'  : have_overlap_list,
