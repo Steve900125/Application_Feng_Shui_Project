@@ -115,6 +115,10 @@ def overlap_rate(items: List[Item]) -> Dict[str, dict]:
         order_dic = order_points(items=items)  # Get order by projection value
         result_dic['full_coverage'] = check_full_coverage(order_dic)
         result_dic['rate'] = cal_inter_rate(order_dic)
+        
+        if result_dic['rate'] == 1:
+            result_dic['full_coverage'] = True
+        
 
     return result_dic
 

@@ -81,6 +81,21 @@ class TestOverlapeCal(unittest.TestCase):
         inter_range = 200.3910 - 150.004
         rate = inter_range / union_range
         self.assertEqual(result['rate'], rate)
+    
+    def test_all_same(self):
+        # orientation : same
+        # name : same
+        # values : float
+        items = [
+            Item(x1=100.001, y1=100.0, x2=200.3910, y2=200.0, orientation='vertical', name='door'),
+            Item(x1=100.001, y1=100.0, x2=200.3910, y2=200.0, orientation='vertical', name='door')
+        ]
+        result = overlap_rate(items= items)
+        union_range = 200.3910 - 100.001
+        inter_range = 200.3910 - 100.001
+        rate = inter_range / union_range
+        self.assertEqual(result['rate'], rate)
+        self.assertEqual(result['full_coverage'], True)
 
     def test_empty_items(self):
         items = [Item(), Item()]  # Doesn't initial Items
