@@ -160,9 +160,9 @@ def save_obstacle_to_jpg(obstacle_results: Dict[str, any], result: Results):
     sub_name = res['items'][0].name + '_to_' +res['items'][1].name + '_'
     file_name = 'obstacle_' + sub_name + str(result_path.name)
 
-    save_to_image(image= image, file_name= file_name)
+    save_dir = save_to_image(image= image, file_name= file_name)
 
-    return file_name
+    return save_dir 
 
 def filter_overlap_rate(overlap_results: List[Dict[str, any]]) -> List[Dict[str, any]]:
     """
@@ -356,7 +356,7 @@ def total_object_to_object(objects_name: List[str], result: Results, orient_chec
 
     image_result_dir = None
     if len(pass_obstacle_results) > 0:
-        save_obstacle_to_jpg(obstacle_results= pass_obstacle_results, result=result)
+        image_result_dir = save_obstacle_to_jpg(obstacle_results= pass_obstacle_results, result=result)
     else:
         return None
 
@@ -389,17 +389,26 @@ def run():
     
     # Object to object analysis
     door_to_door = ['door']
-    # window_to_window = ['window']
     entrance_to_kitchen = ['entrance', 'kitchen']
-
     orient_check = {'entrance': False, 'kitchen': False, 'door': True, 'window':True}
 
-    for result in results:
-        door_results = total_object_to_object(objects_name=door_to_door, result=result, orient_check=orient_check)
-        # window_results = total_object_to_object(objects_name=window_to_window, result=result, orient_check=orient_check)
-        entr_results = total_object_to_object(objects_name=entrance_to_kitchen, result=result, orient_check=orient_check)
+    chatbot_images = {
+        'door_to_door':[],
+        'entrance_to_kitchen':[],
+    }
 
-    show_analy_results(door_results)
+    for result in results:
+        door_result = total_object_to_object(objects_name=door_to_door, result=result, orient_check=orient_check)
+        if door_result is not None:
+            chatbot_images['door_to_door'].append(door_result['image_path'])
+        
+        entr_result = total_object_to_object(objects_name=entrance_to_kitchen, result=result, orient_check=orient_check)
+        if entr_result is not None:
+            chatbot_images['entrance_to_kitchen'].append( entr_result['image_path'])
+    
+    return  chatbot_images
+
 
 if __name__ == "__main__":
-    run()
+    res = run()
+    print(res)

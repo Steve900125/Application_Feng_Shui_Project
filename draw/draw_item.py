@@ -104,3 +104,4 @@ def save_to_image(image: np.ndarray, file_name: str= 'bounding.jpg'):
     OUTPUT_PATH_DEFAULT.mkdir(parents=True, exist_ok=True)
     file_path = OUTPUT_PATH_DEFAULT / file_name
     cv2.imwrite(str(file_path), image)
+    return file_path
