@@ -383,6 +383,8 @@ def run():
     # Delete previous user data
     clean_folder(YOLO_RESULTS_PATH)
     clean_folder(OUTPUT_PATH)
+    if CLEAN_IMAGES_FOLDER :
+        clean_folder(IMAGES_PATH)
     
     # Object detection
     results = floor_plan_detect(images_path=IMAGES_PATH, model_path=DETECT_MODEL_PATH)
