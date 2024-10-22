@@ -22,8 +22,9 @@ CLEAN_IMAGES_FOLDER = False
 from vision.detect import floor_plan_detect  
 from vision.classify import object_orientation_classify
 YOLO_RESULTS_PATH = ROOT / 'runs' 
-DETECT_MODEL_PATH = ROOT / 'models' / 'detect_yolov8.pt'
-CLASSIFY_MODEL_PATH = ROOT / 'models' / 'classify_yolov8.pt'
+
+DETECT_MODEL_PATH  = ROOT / 'models' / 'detect_yolov11.pt'
+CLASSIFY_MODEL_PATH = ROOT / 'models' / 'classify_yolov11.pt'
 
 # Fengshui 
 from fengshui.item import Item  # Core class vary important
@@ -392,7 +393,7 @@ def run():
     # Object to object analysis
     door_to_door = ['door']
     entrance_to_kitchen = ['entrance', 'kitchen']
-    orient_check = {'entrance': False, 'kitchen': False, 'door': True, 'window':True}
+    orient_check = {'entrance': True, 'kitchen': False, 'door': True, 'window':True}
 
     chatbot_images = {
         'door_to_door':[],
