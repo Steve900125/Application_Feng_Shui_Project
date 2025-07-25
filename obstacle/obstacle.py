@@ -176,15 +176,40 @@ def items_obstacle_detect(image_path: Path, items: List[Item]) -> Dict[str, any]
     floor_plan = apply_white_boxes(floor_plan=floor_plan, items=items)
 
     # Check obstacle
-    scan_range = max(items[0].get_length_value(), items[1].get_length_value())
-    max_black_point = points_check(floor_plan, points_line, scan_range, items[0].orientation)
+    # scan_range = max(items[0].get_length_value(), items[1].get_length_value())
+    # max_black_point = points_check(floor_plan, points_line, scan_range, items[0].orientation)
 
-    rate =  max_black_point / scan_range if scan_range > 0 else 0
+    # 2025/07/25 
+    # We have to calculate the rate of obstacle by two ways:
+    # 1. The max black point in the scan range
+    # 2. The min black point in the scan range
+    # Since there are two items which means we have two scan ranges from the start to end point.
+    # We have to consider the two points of view from different items.(Considering one way has obstacle, the other way may not have obstacle)
+    scan_range = max(items[0].get_length_value(), items[1].get_length_value())
+    look_from_small_tiem_max_black_point = points_check(floor_plan, points_line, scan_range, items[0].orientation)
+    look_from_small_rate =  look_from_small_tiem_max_black_point  / scan_range if scan_range > 0 else 0
+    # IMPORTANT : Default rate is the look from small item
+    rate = look_from_small_rate
+
+    scan_range = min(items[0].get_length_value(), items[1].get_length_value())
+    look_from_big_tiem_max_black_point = points_check(floor_plan, points_line, scan_range, items[0].orientation)
+    look_from_big_rate =  look_from_big_tiem_max_black_point  / scan_range if scan_range > 0 else 0
+
+    # Loose Detection, Strict Evaluation
+    if look_from_small_rate >= 0.5 and look_from_big_rate < 0.5:
+        # If the small item has a high rate of obstacle, we consider it as an obstacle which calls "Single Obstacle"
+        obsticale_type = 'Unidirectional Obstacle'
+    elif look_from_big_rate >= 0.5:
+        obsticale_type = 'Bidirectional Obstacle'
+    else:
+        obsticale_type = 'No Obstacle'
+
 
     result_dic['items'] = items
     result_dic['bin_image_np_arrary'] = floor_plan
     result_dic['points_line'] = points_line
     result_dic['rate'] = rate
+    result_dic['obstacle_type'] = obsticale_type
 
     return result_dic
 
@@ -195,5 +220,6 @@ if __name__ == "__main__":
             Item (335.0831604003906, 69.35748291015625, 541.446044921875, 300.3077392578125,'kitchen', 'horizontal')]
     res = items_obstacle_detect(items=items, image_path=path)
 
-    print(res['rate'])
+    for key in res:
+        print("key:{}".format(key))
 
